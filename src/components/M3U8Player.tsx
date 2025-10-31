@@ -64,14 +64,56 @@ function detectVideoType(url: string, manualType?: string): string {
   return typeMap[extension] || 'hls'; // 默认为HLS
 }
 
+// 清理上一个视频的缓存
+async function clearPreviousVideoCache(previousUrl: string): Promise<void> {
+  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
+    console.log('[Player] Service Worker not available, skipping cache clear');
+    return;
+  }
+
+  return new Promise((resolve) => {
+    const messageChannel = new MessageChannel();
+
+    messageChannel.port1.onmessage = (event) => {
+      if (event.data.success) {
+        console.log(`[Player] Successfully cleared previous video cache: ${event.data.deletedCount} items, ${(event.data.deletedSize / 1024 / 1024).toFixed(2)}MB`);
+      } else {
+        console.warn('[Player] Failed to clear previous video cache:', event.data.error);
+      }
+      resolve();
+    };
+
+    navigator.serviceWorker.controller.postMessage(
+      {
+        type: 'CLEAR_PREVIOUS_VIDEO',
+        url: previousUrl
+      },
+      [messageChannel.port2]
+    );
+
+    // 超时保护
+    setTimeout(resolve, 5000);
+  });
+}
+
 export default function M3U8Player({ url, poster, title, type, autoplay = true }: M3U8PlayerProps) {
   const artRef = useRef<HTMLDivElement>(null);
   const artPlayerRef = useRef<Artplayer | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
+  const previousUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!artRef.current || !url) return;
+
+    // 检测 URL 变化，清理上一个视频的缓存
+    if (previousUrlRef.current && previousUrlRef.current !== url) {
+      console.log('[Player] URL changed, clearing previous video cache...');
+      clearPreviousVideoCache(previousUrlRef.current).catch(console.error);
+    }
+
+    // 更新为当前 URL
+    previousUrlRef.current = url;
 
     // 销毁旧的player实例
     if (artPlayerRef.current) {

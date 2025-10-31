@@ -161,6 +161,48 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// 提取URL的基础路径（用于匹配同一视频的所有分片）
+function getVideoBasePath(url) {
+  try {
+    const urlObj = new URL(url);
+    // 移除文件名，保留目录路径
+    const pathParts = urlObj.pathname.split('/');
+    pathParts.pop(); // 移除文件名
+    return urlObj.origin + pathParts.join('/');
+  } catch {
+    return url.split('/').slice(0, -1).join('/');
+  }
+}
+
+// 清理指定视频的所有缓存
+async function clearVideoCache(videoUrl) {
+  const cache = await caches.open(CACHE_NAME);
+  const keys = await cache.keys();
+  const basePath = getVideoBasePath(videoUrl);
+
+  let deletedCount = 0;
+  let deletedSize = 0;
+
+  for (const request of keys) {
+    const requestUrl = request.url;
+
+    // 如果请求URL包含视频的基础路径，则删除
+    if (requestUrl.includes(basePath) || getVideoBasePath(requestUrl) === basePath) {
+      const response = await cache.match(request);
+      if (response) {
+        const blob = await response.blob();
+        deletedSize += blob.size;
+      }
+
+      await cache.delete(request);
+      deletedCount++;
+      console.log('[SW] Deleted cache for:', requestUrl);
+    }
+  }
+
+  return { deletedCount, deletedSize };
+}
+
 // 监听消息（用于清除缓存等操作）
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CLEAR_CACHE') {
@@ -169,6 +211,25 @@ self.addEventListener('message', (event) => {
         console.log('[SW] Cache cleared');
         if (event.ports && event.ports[0]) {
           event.ports[0].postMessage({ success: true });
+        }
+      })
+    );
+  }
+
+  if (event.data && event.data.type === 'CLEAR_PREVIOUS_VIDEO') {
+    event.waitUntil(
+      clearVideoCache(event.data.url).then((result) => {
+        console.log(`[SW] Cleared previous video cache: ${result.deletedCount} items, ${(result.deletedSize / 1024 / 1024).toFixed(2)}MB`);
+        if (event.ports && event.ports[0]) {
+          event.ports[0].postMessage({
+            success: true,
+            ...result
+          });
+        }
+      }).catch((error) => {
+        console.error('[SW] Failed to clear previous video cache:', error);
+        if (event.ports && event.ports[0]) {
+          event.ports[0].postMessage({ success: false, error: error.message });
         }
       })
     );
