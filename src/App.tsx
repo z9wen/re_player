@@ -3,7 +3,7 @@ import { useURLParams } from './hooks/useURLParams';
 import './App.css'
 
 function App() {
-  const { url, poster, title, type } = useURLParams();
+  const { url, poster, title, type, autoplay } = useURLParams();
 
   if (!url) {
     return (
@@ -32,7 +32,7 @@ function App() {
     );
   }
 
-  return <M3U8Player url={url} poster={poster} title={title} type={type} />;
+  return <M3U8Player url={url} poster={poster} title={title} type={type} autoplay={autoplay} />;
 }
 
 export default App
