@@ -83,7 +83,7 @@ async function clearPreviousVideoCache(previousUrl: string): Promise<void> {
       resolve();
     };
 
-    navigator.serviceWorker.controller.postMessage(
+    navigator.serviceWorker.controller!.postMessage(
       {
         type: 'CLEAR_PREVIOUS_VIDEO',
         url: previousUrl
