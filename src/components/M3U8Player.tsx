@@ -12,6 +12,8 @@ interface M3U8PlayerProps {
 
 // 存储播放进度的key
 const STORAGE_KEY_PREFIX = 'artplayer_progress_';
+// 存储上一个播放视频URL的key
+const LAST_VIDEO_URL_KEY = 'artplayer_last_video_url';
 
 // 获取保存的播放时间
 function getSavedTime(url: string): number {
@@ -21,6 +23,24 @@ function getSavedTime(url: string): number {
     return saved ? parseFloat(saved) : 0;
   } catch {
     return 0;
+  }
+}
+
+// 获取上一个播放的视频URL
+function getLastVideoUrl(): string | null {
+  try {
+    return localStorage.getItem(LAST_VIDEO_URL_KEY);
+  } catch {
+    return null;
+  }
+}
+
+// 保存当前视频URL
+function saveCurrentVideoUrl(url: string): void {
+  try {
+    localStorage.setItem(LAST_VIDEO_URL_KEY, url);
+  } catch (e) {
+    console.warn('Failed to save current video URL:', e);
   }
 }
 
@@ -106,14 +126,18 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true }
   useEffect(() => {
     if (!artRef.current || !url) return;
 
+    // 获取上一个播放的视频URL（从 localStorage 或 ref）
+    const lastVideoUrl = previousUrlRef.current || getLastVideoUrl();
+
     // 检测 URL 变化，清理上一个视频的缓存
-    if (previousUrlRef.current && previousUrlRef.current !== url) {
+    if (lastVideoUrl && lastVideoUrl !== url) {
       console.log('[Player] URL changed, clearing previous video cache...');
-      clearPreviousVideoCache(previousUrlRef.current).catch(console.error);
+      clearPreviousVideoCache(lastVideoUrl).catch(console.error);
     }
 
-    // 更新为当前 URL
+    // 保存当前 URL 到 localStorage 和 ref
     previousUrlRef.current = url;
+    saveCurrentVideoUrl(url);
 
     // 销毁旧的player实例
     if (artPlayerRef.current) {
