@@ -13,19 +13,28 @@ function shouldCache(url) {
 
 // 添加时间戳到缓存响应
 async function cacheWithTimestamp(cache, request, response) {
-  const clonedResponse = response.clone();
-  const blob = await clonedResponse.blob();
+  try {
+    // 创建新的 Headers 对象，包含原始响应的所有 headers
+    const headers = new Headers(response.headers);
+    headers.set('sw-cache-time', Date.now().toString());
 
-  const responseToCache = new Response(blob, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: response.headers
-  });
+    // iOS Safari 兼容：直接使用 response.body stream，避免 blob 转换
+    const responseToCache = new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: headers
+    });
 
-  // 添加缓存时间戳
-  responseToCache.headers.set('sw-cache-time', Date.now().toString());
-
-  await cache.put(request, responseToCache);
+    await cache.put(request, responseToCache);
+  } catch (error) {
+    console.error('[SW] Failed to cache with timestamp:', error);
+    // 降级方案：直接缓存原始响应（不添加时间戳）
+    try {
+      await cache.put(request, response);
+    } catch (fallbackError) {
+      console.error('[SW] Fallback cache also failed:', fallbackError);
+    }
+  }
 }
 
 // 检查缓存是否过期
@@ -48,8 +57,18 @@ async function manageCacheSize() {
   for (const request of keys) {
     const response = await cache.match(request);
     if (response) {
-      const blob = await response.blob();
-      const size = blob.size;
+      let size = 0;
+      try {
+        // 尝试获取 blob 大小（iOS Safari 可能失败）
+        const blob = await response.blob();
+        size = blob.size;
+      } catch (error) {
+        // iOS 降级方案：使用 Content-Length header 估算大小
+        const contentLength = response.headers.get('content-length');
+        size = contentLength ? parseInt(contentLength) : 0;
+        console.warn('[SW] Failed to get blob size, using content-length:', size);
+      }
+
       const cacheTime = response.headers.get('sw-cache-time') || '0';
 
       items.push({
@@ -190,8 +209,15 @@ async function clearVideoCache(videoUrl) {
     if (requestUrl.includes(basePath) || getVideoBasePath(requestUrl) === basePath) {
       const response = await cache.match(request);
       if (response) {
-        const blob = await response.blob();
-        deletedSize += blob.size;
+        try {
+          // 尝试获取 blob 大小（iOS Safari 可能失败）
+          const blob = await response.blob();
+          deletedSize += blob.size;
+        } catch (error) {
+          // iOS 降级方案：使用 Content-Length header 估算大小
+          const contentLength = response.headers.get('content-length');
+          deletedSize += contentLength ? parseInt(contentLength) : 0;
+        }
       }
 
       await cache.delete(request);
@@ -244,8 +270,15 @@ self.addEventListener('message', (event) => {
         for (const request of keys) {
           const response = await cache.match(request);
           if (response) {
-            const blob = await response.blob();
-            totalSize += blob.size;
+            try {
+              // 尝试获取 blob 大小（iOS Safari 可能失败）
+              const blob = await response.blob();
+              totalSize += blob.size;
+            } catch (error) {
+              // iOS 降级方案：使用 Content-Length header 估算大小
+              const contentLength = response.headers.get('content-length');
+              totalSize += contentLength ? parseInt(contentLength) : 0;
+            }
           }
         }
 
