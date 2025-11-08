@@ -133,21 +133,26 @@ self.addEventListener('fetch', (event) => {
       // 尝试从缓存获取
       const cachedResponse = await cache.match(request);
 
-      // 如果有缓存且未过期，直接返回
-      if (cachedResponse && !isCacheExpired(cachedResponse)) {
-        console.log('[SW] Cache hit:', url);
+      if (cachedResponse) {
+        // 缓存存在但未过期，直接使用并后台更新
+        if (!isCacheExpired(cachedResponse)) {
+          console.log('[SW] Cache hit:', url);
 
-        // 后台更新 m3u8 文件（保持播放列表最新）
-        if (url.includes('.m3u8')) {
-          fetch(request).then(async (response) => {
-            if (response.ok) {
-              await cacheWithTimestamp(cache, request, response);
-              console.log('[SW] Background updated m3u8:', url);
-            }
-          }).catch(() => {});
+          if (url.includes('.m3u8')) {
+            fetch(request).then(async (response) => {
+              if (response.ok) {
+                await cacheWithTimestamp(cache, request, response);
+                console.log('[SW] Background updated m3u8:', url);
+              }
+            }).catch(() => {});
+          }
+
+          return cachedResponse;
         }
 
-        return cachedResponse;
+        // 缓存已过期则主动删除，避免占用空间
+        console.log('[SW] Cache expired, deleting:', url);
+        await cache.delete(request);
       }
 
       // 从网络获取
