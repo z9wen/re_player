@@ -1,52 +1,52 @@
-name: Dependency Update
+# name: Dependency Update
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 2 * * 1' # 每周一 UTC+0 02:00（北京时间上午10点）
+# on:
+#   workflow_dispatch:
+#   schedule:
+#     - cron: '0 2 * * 1' # 每周一 UTC+0 02:00（北京时间上午10点）
 
-permissions:
-  contents: write
-  pull-requests: write
+# permissions:
+#   contents: write
+#   pull-requests: write
 
-jobs:
-  update-dependencies:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+# jobs:
+#   update-dependencies:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 22
+#           cache: npm
 
-      - name: Install current dependencies
-        run: npm install
+#       - name: Install current dependencies
+#         run: npm install
 
-      - name: Update package versions
-        run: npx npm-check-updates@latest -u
+#       - name: Update package versions
+#         run: npx npm-check-updates@latest -u
 
-      - name: Install updated lockfile
-        run: npm install
+#       - name: Install updated lockfile
+#         run: npm install
 
-      - name: Run build to verify updates
-        run: npm run build
+#       - name: Run build to verify updates
+#         run: npm run build
 
-      - name: Create dependency update PR
-        uses: peter-evans/create-pull-request@v6
-        with:
-          branch: chore/dependency-updates
-          commit-message: "chore: update npm dependencies"
-          title: "chore: weekly dependency updates"
-          body: |
-            Automated dependency bump via GitHub Actions.
+#       - name: Create dependency update PR
+#         uses: peter-evans/create-pull-request@v6
+#         with:
+#           branch: chore/dependency-updates
+#           commit-message: "chore: update npm dependencies"
+#           title: "chore: weekly dependency updates"
+#           body: |
+#             Automated dependency bump via GitHub Actions.
 
-            - Updates both production and dev dependencies with npm-check-updates
-            - Reinstalls the lockfile to keep package-lock.json in sync
-            - Runs the build to ensure compatibility
-          labels: |
-            dependencies
-            automated
-          delete-branch: true
+#             - Updates both production and dev dependencies with npm-check-updates
+#             - Reinstalls the lockfile to keep package-lock.json in sync
+#             - Runs the build to ensure compatibility
+#           labels: |
+#             dependencies
+#             automated
+#           delete-branch: true
