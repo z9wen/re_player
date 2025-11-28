@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import Artplayer from 'artplayer';
 import Hls from 'hls.js';
+import './M3U8Player.css';
 
 interface M3U8PlayerProps {
   url: string;
@@ -158,14 +159,19 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true }
       hotkey: true,
       pip: true,
       mutex: true,
-      autoSize: true,
+      autoSize: false, // 禁用autoSize，改用objectFit控制
       autoMini: true,
       screenshot: true,
       setting: true,
       playbackRate: true,
       aspectRatio: true,
       flip: true,
-      rotate: true
+      rotate: true,
+      theme: '#00a1d6',
+      style: {
+        width: '100%',
+        height: '100%'
+      }
     };
 
     // 只在poster存在时才添加
@@ -356,17 +362,28 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true }
 
   return (
     <div
-      ref={artRef}
       style={{
-        width: '100%',
-        height: '100%',
+        width: '100vw',
+        height: '100vh',
         backgroundColor: '#000',
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden'
       }}
-    />
+    >
+      <div
+        ref={artRef}
+        style={{
+          width: '100%',
+          height: '100%',
+          maxWidth: '100%',
+          maxHeight: '100%'
+        }}
+      />
+    </div>
   );
 }

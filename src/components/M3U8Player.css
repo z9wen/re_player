@@ -1,0 +1,32 @@
+/* 确保Artplayer容器和视频元素正确适配 */
+.art-video-player {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.art-video-player video {
+  object-fit: contain !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 处理竖屏视频的显示 */
+@media (orientation: landscape) {
+  .art-video-player video {
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+}
+
+@media (orientation: portrait) {
+  .art-video-player video {
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+}
+
+/* 确保全屏时的正确显示 */
+.art-fullscreen .art-video-player video,
+.art-fullscreen-web .art-video-player video {
+  object-fit: contain !important;
+}
