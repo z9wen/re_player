@@ -8,7 +8,7 @@ function App() {
   if (!url) {
     return (
       <div className="app-container" style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-        <h1>z9wen Player</h1>
+        <h1>re:Player</h1>
         <p>Usage: /?url=&lt;video-url&gt;</p>
         <p>Supported Formats: HLS (m3u8), DASH (mpd), MP4, WebM, FLV, OGG, MOV, MKV, AVI, WMV, TS, and more</p>
         <p>Optional parameters:</p>
