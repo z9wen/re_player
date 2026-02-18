@@ -3,7 +3,7 @@ import { useURLParams } from './hooks/useURLParams';
 import './App.css'
 
 function App() {
-  const { url, poster, title, type, autoplay } = useURLParams();
+  const { url, poster, title, type, autoplay, enableIframeFullscreen } = useURLParams();
 
   if (!url) {
     return (
@@ -18,6 +18,7 @@ function App() {
           <li><code>poster</code> - Poster image URL</li>
           <li><code>title</code> - Video title</li>
           <li><code>autoplay</code> - Auto play (default: true)</li>
+          <li><code>enableIframeFullscreen</code> - Enable iframe fullscreen communication (default: true)</li>
         </ul>
         <h3>Examples:</h3>
         <div style={{ marginTop: '10px', textAlign: 'left', backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '4px' }}>
@@ -32,7 +33,7 @@ function App() {
     );
   }
 
-  return <M3U8Player url={url} poster={poster} title={title} type={type} autoplay={autoplay} />;
+  return <M3U8Player url={url} poster={poster} title={title} type={type} autoplay={autoplay} enableIframeFullscreen={enableIframeFullscreen} />;
 }
 
 export default App

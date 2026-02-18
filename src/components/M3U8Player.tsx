@@ -9,6 +9,7 @@ interface M3U8PlayerProps {
   title?: string;
   type?: string; // 视频类型: hls, dash, flv, mp4, webm, ogg, mov, etc
   autoplay?: boolean;
+  enableIframeFullscreen?: boolean; // 在iframe中启用全屏通信
 }
 
 // 存储播放进度的key
@@ -85,6 +86,15 @@ function detectVideoType(url: string, manualType?: string): string {
   return typeMap[extension] || 'hls'; // 默认为HLS
 }
 
+// 检测是否在 iframe 中运行
+function isInIframe(): boolean {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true; // 跨域iframe会抛出异常
+  }
+}
+
 // 清理上一个视频的缓存
 async function clearPreviousVideoCache(previousUrl: string): Promise<void> {
   if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
@@ -117,12 +127,13 @@ async function clearPreviousVideoCache(previousUrl: string): Promise<void> {
   });
 }
 
-export default function M3U8Player({ url, poster, title, type, autoplay = true }: M3U8PlayerProps) {
+export default function M3U8Player({ url, poster, title, type, autoplay = true, enableIframeFullscreen = true }: M3U8PlayerProps) {
   const artRef = useRef<HTMLDivElement>(null);
   const artPlayerRef = useRef<Artplayer | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
   const previousUrlRef = useRef<string | null>(null);
+  const isInIframeEnv = useRef<boolean>(isInIframe());
 
   useEffect(() => {
     if (!artRef.current || !url) return;
@@ -286,6 +297,38 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true }
     const art = new Artplayer(config);
 
     artPlayerRef.current = art;
+
+    // 如果在iframe中且启用了iframe全屏通信
+    if (isInIframeEnv.current && enableIframeFullscreen) {
+      // 监听网页全屏事件
+      art.on('fullscreenWeb', (isFullscreenWeb) => {
+        try {
+          // 通知父页面进行全屏切换
+          window.parent.postMessage({
+            type: 'PLAYER_FULLSCREEN_WEB',
+            fullscreen: isFullscreenWeb,
+            source: 'artplayer'
+          }, '*');
+          console.log(`[Player] Sent fullscreenWeb message to parent: ${isFullscreenWeb}`);
+        } catch (e) {
+          console.warn('[Player] Failed to communicate with parent window:', e);
+        }
+      });
+
+      // 监听真全屏事件
+      art.on('fullscreen', (isFullscreen) => {
+        try {
+          window.parent.postMessage({
+            type: 'PLAYER_FULLSCREEN',
+            fullscreen: isFullscreen,
+            source: 'artplayer'
+          }, '*');
+          console.log(`[Player] Sent fullscreen message to parent: ${isFullscreen}`);
+        } catch (e) {
+          console.warn('[Player] Failed to communicate with parent window:', e);
+        }
+      });
+    }
 
     // 播放器加载完成后，恢复上次保存的播放时间
     art.on('ready', () => {
