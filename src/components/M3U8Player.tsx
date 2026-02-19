@@ -136,11 +136,11 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
   const isInIframeEnv = useRef<boolean>(isInIframe());
 
   // 添加调试日志
-  console.log('[Player] 初始化参数:', {
-    isInIframe: isInIframeEnv.current,
-    enableIframeFullscreen,
-    url
-  });
+  // console.log('[Player] 初始化参数:', {
+  //   isInIframe: isInIframeEnv.current,
+  //   enableIframeFullscreen,
+  //   url
+  // });
 
   useEffect(() => {
     if (!artRef.current || !url) return;
@@ -374,9 +374,9 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
     // 视频播放结束时保存进度
     art.on('ended', () => {
       savePlayTime(url, art.currentTime);
-      console.log('[Player] Video ended, time saved');
-      console.log('[Player] isInIframeEnv:', isInIframeEnv.current);
-      console.log('[Player] enableIframeFullscreen:', enableIframeFullscreen);
+      // console.log('[Player] Video ended, time saved');
+      // console.log('[Player] isInIframeEnv:', isInIframeEnv.current);
+      // console.log('[Player] enableIframeFullscreen:', enableIframeFullscreen);
       
       // 如果在iframe中，通知父页面视频播放结束
       if (isInIframeEnv.current && enableIframeFullscreen) {
@@ -385,15 +385,10 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
             type: 'PLAYER_ENDED',
             source: 'artplayer'
           }, '*');
-          console.log('[Player] Sent ended message to parent');
+          // console.log('[Player] Sent ended message to parent');
         } catch (e) {
           console.warn('[Player] Failed to send ended message:', e);
         }
-      } else {
-        console.log('[Player] 不发送 ended 消息:', {
-          isInIframe: isInIframeEnv.current,
-          enableIframeFullscreen
-        });
       }
     });
 
@@ -408,7 +403,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
     // 额外添加原生 video 元素的 ended 事件监听（作为备份）
     const videoElement = art.video;
     const handleVideoEnded = () => {
-      console.log('[Player] Native video ended event triggered');
+      // console.log('[Player] Native video ended event triggered');
       
       // 如果在iframe中，通知父页面视频播放结束
       if (isInIframeEnv.current && enableIframeFullscreen) {
@@ -417,7 +412,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
             type: 'PLAYER_ENDED',
             source: 'artplayer'
           }, '*');
-          console.log('[Player] Sent ended message to parent (from native event)');
+          // console.log('[Player] Sent ended message to parent (from native event)');
         } catch (e) {
           console.warn('[Player] Failed to send ended message:', e);
         }
