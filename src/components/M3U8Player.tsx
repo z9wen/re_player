@@ -405,6 +405,26 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
 
+    // 额外添加原生 video 元素的 ended 事件监听（作为备份）
+    const videoElement = art.video;
+    const handleVideoEnded = () => {
+      console.log('[Player] Native video ended event triggered');
+      
+      // 如果在iframe中，通知父页面视频播放结束
+      if (isInIframeEnv.current && enableIframeFullscreen) {
+        try {
+          window.parent.postMessage({
+            type: 'PLAYER_ENDED',
+            source: 'artplayer'
+          }, '*');
+          console.log('[Player] Sent ended message to parent (from native event)');
+        } catch (e) {
+          console.warn('[Player] Failed to send ended message:', e);
+        }
+      }
+    };
+    videoElement.addEventListener('ended', handleVideoEnded);
+
     return () => {
       // 清理资源前保存当前播放时间
       if (artPlayerRef.current) {
@@ -416,6 +436,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
       }
 
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      videoElement.removeEventListener('ended', handleVideoEnded);
 
       // 销毁 HLS 实例
       if (hlsRef.current) {
