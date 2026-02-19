@@ -368,6 +368,19 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
     art.on('ended', () => {
       savePlayTime(url, art.currentTime);
       console.log('Video ended, time saved');
+      
+      // 如果在iframe中，通知父页面视频播放结束
+      if (isInIframeEnv.current && enableIframeFullscreen) {
+        try {
+          window.parent.postMessage({
+            type: 'PLAYER_ENDED',
+            source: 'artplayer'
+          }, '*');
+          console.log('[Player] Sent ended message to parent');
+        } catch (e) {
+          console.warn('[Player] Failed to send ended message:', e);
+        }
+      }
     });
 
     // 页面关闭前保存进度
