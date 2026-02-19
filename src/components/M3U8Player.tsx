@@ -135,6 +135,13 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
   const previousUrlRef = useRef<string | null>(null);
   const isInIframeEnv = useRef<boolean>(isInIframe());
 
+  // 添加调试日志
+  console.log('[Player] 初始化参数:', {
+    isInIframe: isInIframeEnv.current,
+    enableIframeFullscreen,
+    url
+  });
+
   useEffect(() => {
     if (!artRef.current || !url) return;
 
@@ -367,7 +374,9 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
     // 视频播放结束时保存进度
     art.on('ended', () => {
       savePlayTime(url, art.currentTime);
-      console.log('Video ended, time saved');
+      console.log('[Player] Video ended, time saved');
+      console.log('[Player] isInIframeEnv:', isInIframeEnv.current);
+      console.log('[Player] enableIframeFullscreen:', enableIframeFullscreen);
       
       // 如果在iframe中，通知父页面视频播放结束
       if (isInIframeEnv.current && enableIframeFullscreen) {
@@ -380,6 +389,11 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
         } catch (e) {
           console.warn('[Player] Failed to send ended message:', e);
         }
+      } else {
+        console.log('[Player] 不发送 ended 消息:', {
+          isInIframe: isInIframeEnv.current,
+          enableIframeFullscreen
+        });
       }
     });
 
