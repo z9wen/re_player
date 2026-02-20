@@ -98,7 +98,7 @@ function isInIframe(): boolean {
 // 清理上一个视频的缓存
 async function clearPreviousVideoCache(previousUrl: string): Promise<void> {
   if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
-    console.log('[Player] Service Worker not available, skipping cache clear');
+    // console.log('[Player] Service Worker not available, skipping cache clear');
     return;
   }
 
@@ -107,7 +107,7 @@ async function clearPreviousVideoCache(previousUrl: string): Promise<void> {
 
     messageChannel.port1.onmessage = (event) => {
       if (event.data.success) {
-        console.log(`[Player] Successfully cleared previous video cache: ${event.data.deletedCount} items, ${(event.data.deletedSize / 1024 / 1024).toFixed(2)}MB`);
+        // console.log(`[Player] Successfully cleared previous video cache: ${event.data.deletedCount} items, ${(event.data.deletedSize / 1024 / 1024).toFixed(2)}MB`);
       } else {
         console.warn('[Player] Failed to clear previous video cache:', event.data.error);
       }
@@ -136,7 +136,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
   const isInIframeEnv = useRef<boolean>(isInIframe());
 
   // 添加调试日志
-  // console.log('[Player] 初始化参数:', {
+  // // console.log('[Player] 初始化参数:', {
   //   isInIframe: isInIframeEnv.current,
   //   enableIframeFullscreen,
   //   url
@@ -150,7 +150,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
 
     // 检测 URL 变化，清理上一个视频的缓存
     if (lastVideoUrl && lastVideoUrl !== url) {
-      console.log('[Player] URL changed, clearing previous video cache...');
+      // console.log('[Player] URL changed, clearing previous video cache...');
       clearPreviousVideoCache(lastVideoUrl).catch(console.error);
     }
 
@@ -250,11 +250,11 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
 
             // HLS 事件监听
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
-              console.log('[HLS] Manifest parsed, levels:', hls.levels.length);
+              // console.log('[HLS] Manifest parsed, levels:', hls.levels.length);
             });
 
             hls.on(Hls.Events.FRAG_LOADED, (_event, data) => {
-              console.log('[HLS] Fragment loaded:', data.frag.sn, 'duration:', data.frag.duration);
+              // console.log('[HLS] Fragment loaded:', data.frag.sn, 'duration:', data.frag.duration);
             });
 
             hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -264,15 +264,15 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
               if (data.fatal) {
                 switch (data.type) {
                   case Hls.ErrorTypes.NETWORK_ERROR:
-                    console.log('[HLS] Network error, trying to recover...');
+                    // console.log('[HLS] Network error, trying to recover...');
                     hls.startLoad();
                     break;
                   case Hls.ErrorTypes.MEDIA_ERROR:
-                    console.log('[HLS] Media error, trying to recover...');
+                    // console.log('[HLS] Media error, trying to recover...');
                     hls.recoverMediaError();
                     break;
                   default:
-                    console.log('[HLS] Fatal error, cannot recover');
+                    // console.log('[HLS] Fatal error, cannot recover');
                     hls.destroy();
                     break;
                 }
@@ -289,13 +289,13 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
               } : null;
 
               if (bufferInfo && bufferInfo.buffered > 0) {
-                console.log(`[HLS] Buffer: ${bufferInfo.buffered.toFixed(1)}s ahead`);
+                // console.log(`[HLS] Buffer: ${bufferInfo.buffered.toFixed(1)}s ahead`);
               }
             });
           } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             // iOS Safari 原生支持
             video.src = url;
-            console.log('[HLS] Using native HLS support');
+            // console.log('[HLS] Using native HLS support');
           }
         }
       };
@@ -316,7 +316,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
             fullscreen: isFullscreenWeb,
             source: 'artplayer'
           }, '*');
-          console.log(`[Player] Sent fullscreenWeb message to parent: ${isFullscreenWeb}`);
+          // console.log(`[Player] Sent fullscreenWeb message to parent: ${isFullscreenWeb}`);
         } catch (e) {
           console.warn('[Player] Failed to communicate with parent window:', e);
         }
@@ -330,7 +330,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
             fullscreen: isFullscreen,
             source: 'artplayer'
           }, '*');
-          console.log(`[Player] Sent fullscreen message to parent: ${isFullscreen}`);
+          // console.log(`[Player] Sent fullscreen message to parent: ${isFullscreen}`);
         } catch (e) {
           console.warn('[Player] Failed to communicate with parent window:', e);
         }
@@ -342,7 +342,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
       const savedTime = getSavedTime(url);
       if (savedTime > 0) {
         art.currentTime = savedTime;
-        console.log(`Restored playback time: ${savedTime}s`);
+        // console.log(`Restored playback time: ${savedTime}s`);
       }
     });
 
@@ -358,13 +358,13 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
 
     // 监听播放和暂停事件
     art.on('play', () => {
-      console.log('Video playing');
+      // console.log('Video playing');
     });
 
     art.on('pause', () => {
       // 暂停时立即保存当前时间
       savePlayTime(url, art.currentTime);
-      console.log('Video paused, time saved');
+      // console.log('Video paused, time saved');
     });
 
     art.on('error', (error) => {
@@ -374,9 +374,9 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
     // 视频播放结束时保存进度
     art.on('ended', () => {
       savePlayTime(url, art.currentTime);
-      // console.log('[Player] Video ended, time saved');
-      // console.log('[Player] isInIframeEnv:', isInIframeEnv.current);
-      // console.log('[Player] enableIframeFullscreen:', enableIframeFullscreen);
+      // // console.log('[Player] Video ended, time saved');
+      // // console.log('[Player] isInIframeEnv:', isInIframeEnv.current);
+      // // console.log('[Player] enableIframeFullscreen:', enableIframeFullscreen);
       
       // 如果在iframe中，通知父页面视频播放结束
       if (isInIframeEnv.current && enableIframeFullscreen) {
@@ -385,7 +385,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
             type: 'PLAYER_ENDED',
             source: 'artplayer'
           }, '*');
-          // console.log('[Player] Sent ended message to parent');
+          // // console.log('[Player] Sent ended message to parent');
         } catch (e) {
           console.warn('[Player] Failed to send ended message:', e);
         }
@@ -403,7 +403,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
     // 额外添加原生 video 元素的 ended 事件监听（作为备份）
     const videoElement = art.video;
     const handleVideoEnded = () => {
-      // console.log('[Player] Native video ended event triggered');
+      // // console.log('[Player] Native video ended event triggered');
       
       // 如果在iframe中，通知父页面视频播放结束
       if (isInIframeEnv.current && enableIframeFullscreen) {
@@ -412,7 +412,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
             type: 'PLAYER_ENDED',
             source: 'artplayer'
           }, '*');
-          // console.log('[Player] Sent ended message to parent (from native event)');
+          // // console.log('[Player] Sent ended message to parent (from native event)');
         } catch (e) {
           console.warn('[Player] Failed to send ended message:', e);
         }

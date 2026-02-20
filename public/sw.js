@@ -90,26 +90,26 @@ async function manageCacheSize() {
 
       await cache.delete(item.request);
       totalSize -= item.size;
-      console.log('[SW] Deleted old cache:', item.request.url);
+      // console.log('[SW] Deleted old cache:', item.request.url);
     }
   }
 }
 
 // 安装事件
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker...');
+  // console.log('[SW] Installing service worker...');
   self.skipWaiting();
 });
 
 // 激活事件
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker...');
+  // console.log('[SW] Activating service worker...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
+            // console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -136,13 +136,13 @@ self.addEventListener('fetch', (event) => {
       if (cachedResponse) {
         // 缓存存在但未过期，直接使用并后台更新
         if (!isCacheExpired(cachedResponse)) {
-          console.log('[SW] Cache hit:', url);
+          // console.log('[SW] Cache hit:', url);
 
           if (url.includes('.m3u8')) {
             fetch(request).then(async (response) => {
               if (response.ok) {
                 await cacheWithTimestamp(cache, request, response);
-                console.log('[SW] Background updated m3u8:', url);
+                // console.log('[SW] Background updated m3u8:', url);
               }
             }).catch(() => {});
           }
@@ -151,19 +151,19 @@ self.addEventListener('fetch', (event) => {
         }
 
         // 缓存已过期则主动删除，避免占用空间
-        console.log('[SW] Cache expired, deleting:', url);
+        // console.log('[SW] Cache expired, deleting:', url);
         await cache.delete(request);
       }
 
       // 从网络获取
       try {
-        console.log('[SW] Fetching from network:', url);
+        // console.log('[SW] Fetching from network:', url);
         const networkResponse = await fetch(request);
 
         if (networkResponse.ok) {
           // 缓存成功的响应
           await cacheWithTimestamp(cache, request, networkResponse.clone());
-          console.log('[SW] Cached:', url);
+          // console.log('[SW] Cached:', url);
 
           // 异步管理缓存大小
           manageCacheSize().catch(console.error);
@@ -175,7 +175,7 @@ self.addEventListener('fetch', (event) => {
 
         // 如果网络失败但有过期缓存，返回过期缓存
         if (cachedResponse) {
-          console.log('[SW] Returning expired cache:', url);
+          // console.log('[SW] Returning expired cache:', url);
           return cachedResponse;
         }
 
@@ -227,7 +227,7 @@ async function clearVideoCache(videoUrl) {
 
       await cache.delete(request);
       deletedCount++;
-      console.log('[SW] Deleted cache for:', requestUrl);
+      // console.log('[SW] Deleted cache for:', requestUrl);
     }
   }
 
@@ -239,7 +239,7 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CLEAR_CACHE') {
     event.waitUntil(
       caches.delete(CACHE_NAME).then(() => {
-        console.log('[SW] Cache cleared');
+        // console.log('[SW] Cache cleared');
         if (event.ports && event.ports[0]) {
           event.ports[0].postMessage({ success: true });
         }
@@ -250,7 +250,7 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CLEAR_PREVIOUS_VIDEO') {
     event.waitUntil(
       clearVideoCache(event.data.url).then((result) => {
-        console.log(`[SW] Cleared previous video cache: ${result.deletedCount} items, ${(result.deletedSize / 1024 / 1024).toFixed(2)}MB`);
+        // console.log(`[SW] Cleared previous video cache: ${result.deletedCount} items, ${(result.deletedSize / 1024 / 1024).toFixed(2)}MB`);
         if (event.ports && event.ports[0]) {
           event.ports[0].postMessage({
             success: true,
