@@ -253,7 +253,7 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
               // console.log('[HLS] Manifest parsed, levels:', hls.levels.length);
             });
 
-            hls.on(Hls.Events.FRAG_LOADED, (_event, data) => {
+            hls.on(Hls.Events.FRAG_LOADED, (_event, _data) => {
               // console.log('[HLS] Fragment loaded:', data.frag.sn, 'duration:', data.frag.duration);
             });
 
