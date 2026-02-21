@@ -30,3 +30,165 @@
 .art-fullscreen-web .art-video-player video {
   object-fit: contain !important;
 }
+
+/* ===== 移动端适配 ===== */
+/* iOS 安全区域适配（刘海屏/Home 横条），防止控制栏被遮挡 */
+.art-video-player .art-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+
+/* 竖屏时缩小控制栏高度，防止按钮挤出屏幕 */
+@media (orientation: portrait) and (max-width: 768px) {
+  .art-video-player {
+    --art-bottom-height: 36px !important;
+    --art-control-height: 36px !important;
+    --art-bottom-gap: 8px !important;
+    --art-control-icon-size: 22px !important;
+  }
+}
+
+/* ===== 自定义加载/缓冲动画 ===== */
+.art-custom-loading {
+  animation: art-spin 1s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(0, 161, 214, 0.8));
+}
+
+@keyframes art-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* 加载容器居中 */
+.art-video-player .art-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== 控制栏按钮悬停效果 ===== */
+.art-video-player .art-control-item:hover svg,
+.art-video-player .art-control-item:hover .art-icon svg {
+  filter: drop-shadow(0 0 4px rgba(0, 161, 214, 0.9));
+  transition: filter 0.2s ease;
+}
+
+/* 按钮基础过渡 */
+.art-video-player .art-icon {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.art-video-player .art-icon:hover {
+  transform: scale(1.15);
+  opacity: 1 !important;
+}
+
+/* ===== 进度条样式 ===== */
+/* 进度条轨道（背景） - 常驻 4px */
+.art-video-player .art-progress-color {
+  height: 4px !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px !important;
+  transition: height 0.2s ease !important;
+}
+
+/* hover 时加粗到 6px */
+.art-video-player .art-progress:hover .art-progress-color {
+  height: 6px !important;
+}
+
+/* 已播放部分 - 蓝色 */
+.art-video-player .art-progress-played {
+  background: #00a1d6 !important;
+  border-radius: 4px !important;
+}
+
+/* 已缓冲部分 - 浅灰 */
+.art-video-player .art-progress-loaded {
+  background: rgba(255, 255, 255, 0.38) !important;
+  border-radius: 4px !important;
+}
+
+/* 拖拽圆点 - 默认隐藏，hover 时出现 */
+.art-video-player .art-progress-indicator {
+  width: 14px !important;
+  height: 14px !important;
+  background: #ffffff !important;
+  border-radius: 50% !important;
+  border: 2px solid #00a1d6 !important;
+  box-shadow: 0 0 6px rgba(0, 161, 214, 0.9) !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  margin-left: -7px !important;
+}
+
+/* hover 时圆点弹出 */
+.art-video-player .art-progress:hover .art-progress-indicator {
+  transform: translateY(-50%) scale(1) !important;
+}
+
+/* 拖拽时放大 */
+.art-video-player .art-progress-indicator:active {
+  transform: translateY(-50%) scale(1.3) !important;
+  box-shadow: 0 0 10px rgba(0, 161, 214, 1) !important;
+}
+
+
+
+/* 时间文字使用等宽字体，数字不跳动 */
+.art-video-player .art-current {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', 'Menlo', monospace !important;
+  font-size: 13px !important;
+  font-variant-numeric: tabular-nums !important;
+  letter-spacing: 0.03em !important;
+  opacity: 0.95 !important;
+}
+
+/* ===== 音量条样式 ===== */
+/* 音量面板容器 */
+.art-video-player .art-volume-panel {
+  background: rgba(15, 15, 15, 0.85) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 音量数字 */
+.art-video-player .art-volume-val {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+/* 轨道背景 */
+.art-video-player .art-volume-slider {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-radius: 4px !important;
+  width: 4px !important;
+}
+
+/* 已填充部分（蓝色渐变） */
+.art-video-player .art-volume-loaded {
+  background: linear-gradient(to bottom, #40c4f0, #00a1d6) !important;
+  border-radius: 4px !important;
+  width: 100% !important;
+}
+
+/* 拖拽圆点 */
+.art-video-player .art-volume-indicator {
+  width: 12px !important;
+  height: 12px !important;
+  background: #ffffff !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 6px rgba(0, 161, 214, 0.9) !important;
+  border: 2px solid #00a1d6 !important;
+  left: 50% !important;
+  margin-left: -6px !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+/* 拖拽圆点悬停放大 */
+.art-video-player .art-volume-panel:hover .art-volume-indicator {
+  transform: scale(1.3) !important;
+  box-shadow: 0 0 10px rgba(0, 161, 214, 1) !important;
+}

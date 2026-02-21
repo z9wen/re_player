@@ -189,6 +189,81 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
       style: {
         width: '100%',
         height: '100%'
+      },
+      cssVar: {
+        '--art-bottom-height': '44px',      // 控制栏高度（默认 38px）
+        '--art-control-height': '44px',     // 单个按钮高度
+        '--art-bottom-gap': '5px',          // 按钮左右间距（默认 5px）
+        '--art-control-icon-size': '26px',  // 图标尺寸（默认 22px）
+        '--art-progress-height': '4px',     // 进度条高度常驻 4px
+      },
+      icons: {
+        // 替换缓冲/加载图标为自定义 SVG 动画
+        loading: `<svg class="art-custom-loading" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="50" height="50">
+          <circle cx="25" cy="25" r="20" fill="none" stroke="#00a1d6" stroke-width="4" stroke-linecap="round"
+            stroke-dasharray="80 40" transform="rotate(-90 25 25)"/>
+        </svg>`,
+
+        // 中央播放/暂停状态图标
+        state: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+          <circle cx="40" cy="40" r="38" fill="rgba(0,0,0,0.5)" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+          <polygon points="32,22 60,40 32,58" fill="white"/>
+        </svg>`,
+
+        // 播放按钮
+        play: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M8 5v14l11-7z"/>
+        </svg>`,
+
+        // 暂停按钮
+        pause: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>`,
+
+        // 音量按钮
+        volume: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>`,
+
+        // 静音按钮
+        volumeClose: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>`,
+
+        // 设置按钮
+        setting: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+        </svg>`,
+
+        // 截图按钮
+        screenshot: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z"/>
+        </svg>`,
+
+        // 画中画按钮
+        pip: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.99 2 1.99h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02z"/>
+        </svg>`,
+
+        // 网页全屏
+        fullscreenWeb: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M3 3h7v2H5v5H3V3zm11 0h7v7h-2V5h-5V3zM3 14h2v5h5v2H3v-7zm16 5h-5v2h7v-7h-2v5z"/>
+        </svg>`,
+
+        // 网页全屏退出
+        fullscreenWebOff: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M8 3v3H5V3H3v5h7V3H8zm8 0h-2v5h7V3h-2v3h-3V3zM8 19H5v-3H3v5h7v-5H8v3zm8 0v-3h2v3h-2v2h5v-5h-7v5h2z"/>
+        </svg>`,
+
+        // 全屏
+        fullscreen: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>`,
+
+        // 全屏退出
+        fullscreenOff: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+          <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+        </svg>`,
       }
     };
 
@@ -368,7 +443,21 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
     });
 
     art.on('error', (error) => {
-      console.error('Playback error:', error);
+      const video = art.video;
+      const mediaErr = video?.error;
+      const codeMap: Record<number, string> = {
+        1: 'MEDIA_ERR_ABORTED（用户中止）',
+        2: 'MEDIA_ERR_NETWORK（网络错误，URL 可能已失效）',
+        3: 'MEDIA_ERR_DECODE（解码错误）',
+        4: 'MEDIA_ERR_SRC_NOT_SUPPORTED（格式不支持）',
+      };
+      console.error('[Player] Playback error:', {
+        code: mediaErr?.code,
+        reason: mediaErr ? (codeMap[mediaErr.code] ?? '未知') : '无 MediaError',
+        message: mediaErr?.message,
+        url: url,
+        event: error,
+      });
     });
 
     // 视频播放结束时保存进度
@@ -450,7 +539,9 @@ export default function M3U8Player({ url, poster, title, type, autoplay = true, 
     <div
       style={{
         width: '100vw',
-        height: '100vh',
+        // dvh = dynamic viewport height，会随手机浏览器地址栏显隐动态调整
+        // 降级为 100vh（不支持 dvh 的旧浏览器）
+        height: '100dvh',
         backgroundColor: '#000',
         position: 'fixed',
         top: 0,
